@@ -1,0 +1,19 @@
+# ...existing code...
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+# ...existing code...
+STATIC_URL = './main/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "./main/static",
+]
+# ...existing code...
+TEMPLATES = [
+    {
+        # ...existing code...
+        'DIRS': [BASE_DIR / "main/templates/main"],
+        # ...existing code...
+    },
+]
+# ...existing code...

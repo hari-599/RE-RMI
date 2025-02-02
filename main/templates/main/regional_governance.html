@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regional Governance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .header a:hover {
+            background-color: #0056b3;
+        }
+        .topics {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .topic {
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .topic:hover {
+            transform: translateY(-3px);
+        }
+        .details {
+            display: none;
+            margin-top: 20px;
+        }
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .details table th,
+        .details table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .details table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .loading {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #007BFF;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}">Home</a>
+    </div>
+
+    <h1>Consumer Perception</h1>
+
+    <div class="topics">
+        <div class="topic" data-topic="1">Support policies and schemes</div>
+        <div class="topic" data-topic="2">Institutional aspects</div>
+        <div class="topic" data-topic="3">financial support system</div>
+ 
+    </div>
+
+    <div class="details" id="details">
+        <h2 id="details-title"></h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Sub-Indicator</th>
+                    <th>Question Number</th>
+                    <th>Cumulative Value</th>
+                </tr>
+            </thead>
+            <tbody id="details-body">
+                <!-- Rows populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="loading" id="loading"></div>
+
+    <script>
+        const topics = document.querySelectorAll('.topic');
+        const details = document.getElementById('details');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsBody = document.getElementById('details-body');
+
+        const data = {
+            1: [
+                { indicator: 'Renewable energy policies', subIndicator: 'Existance of Renewable energy policies and targets ', question: 'G.Q1' },
+                { indicator: 'Renewable energy schemes', subIndicator: 'Existance of designated schemes for potential RES under the RE policy of the state, focusing domestic sector ', question: 'G.Q2' },
+                { indicator: 'Renewable energy schemes', subIndicator: 'Comprehensiveness in schemes planning', question: 'G.Q3' },
+                { indicator: 'Mandatory guidelines', subIndicator: 'Mandatory guidelines for RET installation in Households', question: 'G.Q4' },
+                { indicator: 'Operational procedures', subIndicator: 'Enforcement of Standard Operational Procedures by Govt.', question: 'G.Q5' },
+                { indicator: 'Recognitions and certifications', subIndicator: 'Promotional events or advertisements ', question: 'G.Q6' },
+                { indicator: 'Recognitions and certifications', subIndicator: 'Certifications for appreciating RET adoption', question: 'G.Q7' }
+
+            ],
+            2: [
+                { indicator: 'Organizational structure', subIndicator: 'Visible governance structure for program implementation', question: 'G.Q8' },
+                { indicator: 'Capacity building', subIndicator: 'Skill development training sessions/courses for RET installation and maintenance ', question: 'G.Q9' },
+                { indicator: 'Capacity building', subIndicator: 'Regularity of skill development training sessions/courses for RET installation and maintenance (in months)', question: 'G.Q10' },
+                { indicator: 'Capacity building', subIndicator: 'Awareness classes/camps for domestic energy consumers ', question: 'G.Q11' },
+                { indicator: 'Capacity building', subIndicator: 'Regularity  in conducting awareness classes/ camps for domestic energy consumers (in months)', question: 'G.Q12' },
+                { indicator: 'Capacity building', subIndicator: 'Awareness classes/camps for RE suppliers ', question: 'G.Q13' },
+                { indicator: 'Capacity building', subIndicator: 'Regularity in conducting awareness classes/camps for RE suppliers ', question: 'G.Q14' },
+                { indicator: 'Demand assessment', subIndicator: 'Regular energy demand assessments for regions', question: 'G.Q15' },
+                { indicator: 'Monitoring mechanisms', subIndicator: 'Documentation and quality assurance of domestic installations', question: 'G.Q16' },
+                { indicator: 'Monitoring mechanisms', subIndicator: 'Regularity in conducting quality monitoring for ongoing initiatives (in months)', question: 'G.Q17' },
+                { indicator: 'Monitoring mechanisms', subIndicator: 'Annual performance report of the ongoing schemes ', question: 'G.Q18' },
+                { indicator: 'Institutional coordination and collaboration', subIndicator: 'Stakeholder participation in progress assessment meetings', question: 'G.Q19' },
+                { indicator: 'Institutional coordination and collaboration', subIndicator: 'Regularity in conducting  progress assessment meetings (in months)', question: 'G.Q20' },
+                { indicator: 'Institutional coordination and collaboration', subIndicator: 'Transparent single window data-sharing platform', question: 'G.Q21' },
+                { indicator: 'Institutional coordination and collaboration', subIndicator: 'Designated Person of contact for each program ensuring accessibility for all stakeholders', question: 'G.Q22' },
+
+
+            ],
+            3: [
+                { indicator: 'Financial support for renewable energy systems', subIndicator: 'Budget allocation specifically for RE infrastructure development', question: 'G.Q23' },
+                { indicator: 'Financial support for research and development in renewable energy sector', subIndicator: 'Budget allocation specifically for monitoring and maintenance of RE systems', question: 'G.Q24' },
+                { indicator: 'Financial support for monitoring and evaluation', subIndicator: 'Budget allocation specifically for research and development in the renewable energy sector', question: 'G.Q25' },
+                { indicator: 'Subsidy allocation', subIndicator: 'Subsidy allocation under specific RET schemes', question: 'G.Q26' }
+            ],
+
+        };
+
+        const globalWeights = {
+            'G.Q1': 0.01957749053,
+            'G.Q2': 0.006231762569,
+            'G.Q3': 0.01248223914,
+            'G.Q4': 0.016487927,
+            'G.Q5': 0.01808693852,
+            'G.Q6': 0.008037266873,
+            'G.Q7': 0.008037266873,
+            'G.Q8': 0.01729457159,
+            'G.Q9': 0.001865672155,
+            'G.Q10': 0.003748152167,
+            'G.Q11': 0.001865672155,
+            'G.Q12': 0.00373134431,
+            'G.Q13': 0.001865672155,
+            'G.Q14': 0.00373134431,
+            'G.Q15': 0.01501799423,
+            'G.Q16': 0.00606171739,
+            'G.Q17': 0.006079920745,
+            'G.Q18': 0.00606171739,
+            'G.Q19': 0.004084156845,
+            'G.Q20': 0.004084156845,
+            'G.Q21': 0.004084156845,
+            'G.Q22': 0.004084156845,
+            'G.Q23': 0.02166819574,
+            'G.Q24': 0.02079015475,
+            'G.Q25': 0.02036687681,
+            'G.Q26': 0.02253165972
+        };
+
+        let maturityValues = {};
+
+async function fetchAllMaturityValues() {
+    const loadingIndicator = document.getElementById('loading');
+    loadingIndicator.style.display = 'block';
+    try {
+        const response = await fetch('/api/get-topic-data/1/');
+        if (!response.ok) {
+            throw new Error('Failed to fetch data');
+        }
+
+        const apiData = await response.json();
+        maturityValues = apiData.reduce((acc, item) => {
+            const globalWeight = globalWeights[item['Question Number']] || 0;
+            acc[item['Question Number']] = (item['Cumulative Value'] * globalWeight);
+            return acc;
+        }, {});
+        console.log('Pre-fetched Maturity Values:', maturityValues);
+    } catch (error) {
+        console.error('Error pre-fetching maturity values:', error);
+    } finally {
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+// Call this function on page load
+fetchAllMaturityValues();
+
+topics.forEach(topic => {
+    topic.addEventListener('click', () => {
+        const topicId = topic.getAttribute('data-topic');
+        const topicData = data[topicId];
+
+        detailsTitle.textContent = topic.textContent;
+
+        const rows = topicData.map(item => {
+            const value = maturityValues[item.question];
+            return `
+                <tr>
+                    <td>${item.indicator}</td>
+                    <td>${item.subIndicator}</td>
+                    <td>${item.question}</td>
+                    <td>${value !== undefined ? value.toFixed(4) : 'N/A'}</td>
+                </tr>
+            `;
+        }).join('');
+
+        detailsBody.innerHTML = rows;
+        details.style.display = 'block';
+    });
+});
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Perception</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .header a:hover {
+            background-color: #0056b3;
+        }
+        .topics {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .topic {
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .topic:hover {
+            transform: translateY(-3px);
+        }
+        .details {
+            display: none;
+            margin-top: 20px;
+        }
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .details table th,
+        .details table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .details table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007BFF;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}">Home</a>
+    </div>
+
+    <h1>Consumer Perception</h1>
+
+    <div class="topics">
+        <div class="topic" data-topic="1">Energy consumption pattern</div>
+        <div class="topic" data-topic="2">Consumer Perception: Social aspects</div>
+        <div class="topic" data-topic="3">Consumer Perception: Economic aspects</div>
+        <div class="topic" data-topic="4">Consumer Perception: Environmental aspects</div>
+        <div class="topic" data-topic="5">Consumer Perception: Technological aspects</div>
+    </div>
+
+    <div class="details" id="details">
+        <h2 id="details-title"></h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Sub-Indicator</th>
+                    <th>Question Number</th>
+                    <th>Cumulative Value</th>
+                </tr>
+            </thead>
+            <tbody id="details-body">
+                <!-- Rows populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="loading-spinner" id="loading-spinner"></div>
+
+    <script>
+        const topics = document.querySelectorAll('.topic');
+        const details = document.getElementById('details');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsBody = document.getElementById('details-body');
+
+        const data = {
+            1: [
+                { indicator: 'Renewable energy access', subIndicator: 'Existing renewable energy prosumer for domestic use ', question: 'C.Q1' },
+                { indicator: 'Renewable energy access', subIndicator: 'RE supported appliances with at least 50% contribution to total energy usage ', question: 'C.Q2' },
+                { indicator: 'Renewable energy access', subIndicator: 'Household with RET connected storage facility', question: 'C.Q3' },
+                { indicator: 'Household energy consumption', subIndicator: 'Percentage contribution from RE Sources in annual household electricity consumption', question: 'C.Q4' },
+                { indicator: 'Annual energy expenditure', subIndicator: 'Percentage reduction in annual household electricity bill after RET installation', question: 'C.Q5' },
+                { indicator: 'Ability to sell energy', subIndicator: 'Household ablity to sell the generated electricity to the main grid', question: 'C.Q6' }
+            ],
+            2: [
+                { indicator: 'Consumer awareness economic and environmental benefits', subIndicator: 'Consumers awareness of economic and environmental benefits of RETs', question: 'C.Q7' },
+                { indicator: 'Consumers awareness of  how to obtain and use RETs', subIndicator: 'Consumers awareness of  how to obtain and use RETs', question: 'C.Q8' },
+                { indicator: 'Consumers awareness of available financial assistance', subIndicator: 'Consumers awareness of available financial assistance to support RETs', question: 'C.Q9' },
+                { indicator: 'Access to service providers', subIndicator: 'Access to RE distribution and installation companies', question: 'C.Q10' },
+                { indicator: 'Consumer satisfaction', subIndicator: 'Consumer satisfaction with RETs for domestic energy consumption', question: 'C.Q11' },
+                { indicator: 'Consumer satisfaction', subIndicator: 'Consumer satisfaction  with the Supplier\'s service', question: 'C.Q12' },
+                { indicator: 'Consumer satisfaction', subIndicator: 'Consumer satisfaction with customer service/ technical support post-installation, from suppliers', question: 'C.Q13' },
+                { indicator: 'Consumer satisfaction', subIndicator: 'Consumer satisfaction with financial aid from Govt', question: 'C.Q14' },
+                { indicator: 'Consumer willingness', subIndicator: 'Consumer willingness to recommend RETs to others', question: 'C.Q15' },
+                { indicator: 'Consumer willingness', subIndicator: 'Consumer willingness to upgrade/ additional RETs for domestic use', question: 'C.Q16' }
+            ],
+            3: [
+                { indicator: 'Affordability of capital cost', subIndicator: 'Affordability of the RET\'s capital cost ', question: 'C.Q17' },
+                { indicator: 'Affordability of renewable energy loans', subIndicator: 'Affordability of the RE loans ', question: 'C.Q18' },
+                { indicator: 'Adequacy of incentives', subIndicator: 'Adequacy of government incentives/subsidies', question: 'C.Q19' },
+                { indicator: 'Certainty of energy costs', subIndicator: 'Consumers awareness of certainty of long-term energy costs', question: 'C.Q20' },
+                { indicator: 'Certainty of Return of Investment', subIndicator: 'Consumers awareness of certainty of Return of Investment', question: 'C.Q21' }
+            ],
+            4: [
+                { indicator: 'Environmental concern', subIndicator: 'Concern towards climate change and energy Security	', question: 'C.Q22' },
+                { indicator: 'Environmental education',subIndicator: 'Environmental education as part of academic curriculum/courses/camps', question: 'C.Q23' },
+                { indicator: 'Waste management', subIndicator: 'Provision for waste collection in the region', question: 'C.Q24' },
+                { indicator: 'Waste management', subIndicator: 'Provision for waste management in the region', question: 'C.Q25' }
+            ],
+            5: [
+                { indicator: 'Availability of infrastructure', subIndicator: 'Provision for availing supporting infrastructure', question: 'C.Q26' },
+                { indicator: 'Quality assurance', subIndicator: 'Performance and maintenance documentation for quality assurance without fail', question: 'C.Q27' },
+                { indicator: 'Technical support', subIndicator: 'Convenience of RETs for domestic usage, in terms of technical assistance and support', question: 'C.Q28' },
+                { indicator: ' User friendliness', subIndicator: 'Convenience of RETs for domestic usage, in terms of user-friendliness', question: 'C.Q29' }
+            ]
+        };
+
+        const globalWeights = {
+            'C.Q1': 0.02308375746,
+            'C.Q2': 0.01156305649,
+            'C.Q3': 0.007708704327,
+            'C.Q4': 0.04873863508,
+            'C.Q5': 0.04607604857,
+            'C.Q6': 0.05010154934,
+            'C.Q7': 0.01129079994,
+            'C.Q8': 0.01036887107,
+            'C.Q9': 0.009647835548,
+            'C.Q10': 0.009808386133,
+            'C.Q11': 0.002659103595,
+            'C.Q12': 0.002659103595,
+            'C.Q13': 0.002659103595,
+            'C.Q14': 0.002659103595,
+            'C.Q15': 0.006805744972,
+            'C.Q16': 0.003397770728,
+            'C.Q17': 0.01454726854,
+            'C.Q18': 0.01289733756,
+            'C.Q19': 0.01279091063,
+            'C.Q20': 0.01292354044,
+            'C.Q21': 0.01345903476,
+            'C.Q22': 0.01939009674,
+            'C.Q23': 0.01924099275,
+            'C.Q24': 0.009181640538,
+            'C.Q25': 0.009181640538,
+            'C.Q26': 0.01663118099,
+            'C.Q27': 0.01451410295,
+            'C.Q28': 0.01639318135,
+            'C.Q29': 0.01621245577
+        };
+
+        let maturityValues = {};
+
+        async function fetchMaturityData() {
+            const loadingSpinner = document.getElementById('loading-spinner');
+            loadingSpinner.style.display = 'block';
+
+            try {
+                const [response3, response4] = await Promise.all([
+                    fetch('/api/get-topic-data/3/'),
+                    fetch('/api/get-topic-data/4/')
+                ]);
+
+                if (!response3.ok || !response4.ok) throw new Error('Failed to fetch data');
+
+                const data3 = await response3.json();
+                const data4 = await response4.json();
+
+                const maturityMap = {};
+
+                [...data3, ...data4].forEach(item => {
+                    const questionNumber = item['Question Number'];
+                    const globalWeight = globalWeights[questionNumber] || 0;
+                    const cumulativeValue = parseFloat(item['Cumulative Value']) || 0;
+                    const maturityValue = (cumulativeValue * globalWeight).toFixed(4);
+
+                    maturityMap[questionNumber] = parseFloat(maturityMap[questionNumber] || 0) + parseFloat(maturityValue);
+                });
+
+                return maturityMap;
+            } catch (error) {
+                console.error('Error fetching maturity data:', error);
+                return {};
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            maturityValues = await fetchMaturityData();
+        });
+
+        topics.forEach(topic => {
+            topic.addEventListener('click', () => {
+                const topicId = topic.getAttribute('data-topic');
+                const topicData = data[topicId];
+
+                detailsTitle.textContent = topic.textContent;
+
+                const rows = topicData.map(item => {
+                    const value = maturityValues[item.question] !== undefined ? maturityValues[item.question] : 'N/A';
+                    return `
+                        <tr>
+                            <td>${item.indicator}</td>
+                            <td>${item.subIndicator}</td>
+                            <td>${item.question}</td>
+                            <td>${value}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                detailsBody.innerHTML = rows;
+                details.style.display = 'block';
+
+                const maturitySum = Object.values(maturityValues).reduce((sum, value) => sum + parseFloat(value), 0);
+                const weightSum = Object.values(globalWeights).reduce((sum, value) => sum + value, 0);
+
+                localStorage.setItem('consumerMaturitySum', maturitySum);
+                localStorage.setItem('consumerWeightSum', weightSum);
+            });
+        });
+    </script>
+</body>
+</html>

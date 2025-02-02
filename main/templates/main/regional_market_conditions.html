@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Regional Market Conditions Analysis">
+    <title>Regional Market Conditions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .header a:hover {
+            background-color: #0056b3;
+        }
+        .topic {
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .topic:hover {
+            transform: translateY(-3px);
+        }
+        .details {
+            display: none;
+            margin-top: 20px;
+        }
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .details table th, 
+        .details table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .details table th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007BFF;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="{% url 'home' %}">Home</a>
+    </div>
+
+    <h1>Regional Market Conditions</h1>
+
+    <div class="topic" id="topic">
+        Supply and Marketing
+    </div>
+
+    <div class="details" id="details">
+        <h2>Market Trends and Analysis</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Sub-Indicator</th>
+                    <th>Question Number</th>
+                    <th>Cumulative Value</th>
+                </tr>
+            </thead>
+            <tbody id="details-body"></tbody>
+        </table>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const topic = document.getElementById('topic');
+            const details = document.getElementById('details');
+            const detailsBody = document.getElementById('details-body');
+            const loading = document.getElementById('loading');
+
+            const staticData = [
+                { indicator: 'State of demand', subIndicator: 'Existing state of RE demand in local markets', question: 'M.Q1' },
+                { indicator: 'State of supply', subIndicator: 'Current state of RE supply in local markets', question: 'M.Q2' },
+                { indicator: 'State of supply', subIndicator: 'Regular delay in supply procurement', question: 'M.Q3' },
+                { indicator: 'State of supply', subIndicator: 'Average time for installation from order reception', question: 'M.Q4' },
+                { indicator: 'State of supply', subIndicator: 'Advertisements by suppliers among target consumers', question: 'M.Q5' },
+                { indicator: 'Supplier awareness', subIndicator: 'Suppliers awareness on the benefits of need for RETs', question: 'M.Q6' },
+                { indicator: 'Supplier awareness', subIndicator: 'Suppliers awareness on the government schemes', question: 'M.Q7' },
+                { indicator: 'Supplier awareness', subIndicator: 'Suppliers awareness on government incentives and RE loans', question: 'M.Q8' },
+                { indicator: 'Procedural reliability', subIndicator: 'Reliability of supplier authorization procedure mechanism', question: 'M.Q9' },
+                { indicator: 'Procedural reliability', subIndicator: 'Promptness of payment guarantee mechanism', question: 'M.Q10' },
+                { indicator: 'Procedural reliability', subIndicator: 'Previous experiences of payment delay from government', question: 'M.Q11' },
+                { indicator: 'Procedural reliability', subIndicator: 'Transparency in current Payment guarantee mechanism', question: 'M.Q12' },
+                { indicator: 'Procedural reliability', subIndicator: 'Provision for a single window data-sharing platform to ensure transparency', question: 'M.Q13' },
+                { indicator: 'Procedural reliability', subIndicator: 'Provision for status inquiry while payment processing', question: 'M.Q14' },
+                { indicator: 'Procedural reliability', subIndicator: 'Provision for customer care service for suppliers', question: 'M.Q15' },
+                { indicator: 'Procedural reliability', subIndicator: 'Designated Person of contact for each program to ensure accessibility for all stakeholders', question: 'M.Q16' },
+                { indicator: 'Operation and maintenance', subIndicator: 'Provision for aftersales service by the supplier side', question: 'M.Q17' },
+                { indicator: 'Operation and maintenance', subIndicator: 'Provision for annual maintenance from suppliers', question: 'M.Q18' },
+                { indicator: 'Operation and maintenance', subIndicator: 'Effectiveness of skill development and training sessions from govt', question: 'M.Q19' },
+                { indicator: 'Operation and maintenance', subIndicator: 'Provision for customer care service provided by the supplier side', question: 'M.Q20' }
+            ];
+
+            const globalWeights = {
+                'M.Q1': 0.04789201967, 'M.Q2': 0.01443893863, 'M.Q3': 0.01443893863, 'M.Q4': 0.01443893863,
+                'M.Q5': 0.007168983517, 'M.Q6': 0.01767070954, 'M.Q7': 0.01761780323, 'M.Q8': 0.01761780323,
+                'M.Q9': 0.006039249402, 'M.Q10': 0.006039249402, 'M.Q11': 0.006039249402, 'M.Q12': 0.006039249402,
+                'M.Q13': 0.006039249402, 'M.Q14': 0.006039249402, 'M.Q15': 0.006039249402, 'M.Q16': 0.006039249402,
+                'M.Q17': 0.01326522751, 'M.Q18': 0.01326522751, 'M.Q19': 0.01326522751, 'M.Q20': 0.01326522751
+            };
+
+            async function fetchMaturityValues() {
+                try {
+                    const response = await fetch('/api/get-topic-data/2/');
+                    if (!response.ok) throw new Error('Failed to fetch data');
+
+                    const apiData = await response.json();
+                    const maturityValues = apiData.reduce((acc, item) => {
+                        const weight = globalWeights[item['Question Number']] || 0;
+                        acc[item['Question Number']] = (item['Cumulative Value'] * weight).toFixed(4);
+                        return acc;
+                    }, {});
+
+                    localStorage.setItem('marketMaturitySum', Object.values(maturityValues).reduce((sum, val) => sum + parseFloat(val), 0));
+                    localStorage.setItem('marketWeightSum', Object.values(globalWeights).reduce((sum, val) => sum + val, 0));
+
+                    loading.style.display = 'none'; // Hide the loading spinner
+                    return maturityValues;
+                } catch (error) {
+                    console.error('Error fetching maturity values:', error);
+                    loading.style.display = 'none'; // Hide the loading spinner
+                    return {};
+                }
+            }
+
+            // Pre-fetch data on page load
+            fetchMaturityValues();
+
+            topic.addEventListener('click', async () => {
+                loading.style.display = 'flex'; // Show the loading spinner
+                const values = await fetchMaturityValues();
+                detailsBody.innerHTML = staticData.map(item => `
+                    <tr>
+                        <td>${item.indicator}</td>
+                        <td>${item.subIndicator}</td>
+                        <td>${item.question}</td>
+                        <td>${values[item.question] || 'N/A'}</td>
+                    </tr>`).join('');
+                details.style.display = 'block';
+                loading.style.display = 'none'; // Hide the loading spinner
+            });
+        });
+    </script>
+
+</body>
+</html>

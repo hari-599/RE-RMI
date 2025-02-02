@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RE-RMI Summary</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .header a:hover {
+            background-color: #0056b3;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        .button-container button:disabled {
+            background-color: #0056b3;
+            cursor: not-allowed;
+        }
+        .button-container .spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top: 2px solid #007BFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        .button-container button.loading .spinner {
+            display: block;
+        }
+        .summary-results {
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .summary-results h3 {
+            margin-bottom: 10px;
+        }
+        .progress-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        .progress-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .progress-column {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+        }
+        .progress-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 10px 0;
+        }
+        .progress-circle.main {
+            width: 200px;
+            height: 200px;
+        }
+        .progress-label {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: blue;
+        }
+        .progress-caption {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .progress-caption.main {
+            color: #FF5733; /* Highlighted */
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.0/progressbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <a href="/home/">Home</a>
+    </div>
+
+    <h1 class="text-center">RE-RMI Summary</h1>
+
+    <div class="button-container">
+        <button id="generate-summary" class="btn btn-primary">
+            <span>Click here to generate RE-RMI summary</span>
+            <div class="spinner"></div>
+        </button>
+        <!-- <button id="download-summary" class="btn btn-secondary" disabled>
+            <i class="fas fa-download"></i> Download Summary
+        </button> -->
+    </div>
+
+    <div class="summary-results" id="summary-results">
+        <h3>RE-RMI Summary Results</h3>
+        <p><strong>RE-RMI Summary:</strong> <span id="re-rmi-summary"></span></p>
+        <div class="progress-container">
+            <!-- Main RE-RMI Summary Circle -->
+            <div class="progress-main">
+                <div class="progress-circle main" id="circleRE">
+                    <div class="progress-label" id="labelRE"></div>
+                </div>
+                <div class="progress-caption main">RE-RMI Summary</div>
+            </div>
+
+            <!-- Row of Smaller Circles -->
+            <div class="progress-column">
+                <div class="progress-circle" id="circleA">
+                    <div class="progress-label" id="labelA"></div>
+                </div>
+                <div class="progress-caption">Governance Maturity Index</div>
+                <div class="progress-circle" id="circleB">
+                    <div class="progress-label" id="labelB"></div>
+                </div>
+                <div class="progress-caption">Market Maturity Index</div>
+                <div class="progress-circle" id="circleC">
+                    <div class="progress-label" id="labelC"></div>
+                </div>
+                <div class="progress-caption">Consumer Maturity Index</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fetchData = async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                return await response.text();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return null;
+            }
+        };
+
+        const createCircularProgress = (id, value, max = 1, color = '#007BFF') => {
+            const progressBar = new ProgressBar.Circle(id, {
+                strokeWidth: 6,
+                easing: 'easeInOut',
+                duration: 1400,
+                color: color,
+                trailColor: '#e9ecef',
+                trailWidth: 6,
+                text: {
+                    value: '0',
+                    style: {
+                        color: color,
+                        fontSize: '20px',  // Increased font size for better visibility
+                        fontWeight: 'bold',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                    },
+                },
+            });
+            progressBar.animate(Number(value) / max);
+            progressBar.setText(Number(value).toFixed(3));
+            return progressBar;
+        };
+
+        document.getElementById('generate-summary').addEventListener('click', async () => {
+            const button = document.getElementById('generate-summary');
+            button.disabled = true, button.classList.add('loading');
+
+            try {
+                const governanceMaturitySum = parseFloat(localStorage.getItem('governanceMaturitySum')) || 0;
+                const governanceWeightSum = parseFloat(localStorage.getItem('governanceWeightSum')) || 0;
+                const marketMaturitySum = parseFloat(localStorage.getItem('marketMaturitySum')) || 0;
+                const marketWeightSum = parseFloat(localStorage.getItem('marketWeightSum')) || 0;
+                const consumerMaturitySum = parseFloat(localStorage.getItem('consumerMaturitySum')) || 0;
+                const consumerWeightSum = parseFloat(localStorage.getItem('consumerWeightSum')) || 0;
+
+                const percentageContribution = parseFloat(window.localStorage.getItem('retContribution')) || 0;
+
+                const A = governanceWeightSum ? parseFloat((governanceMaturitySum / governanceWeightSum).toFixed(3)) : 0;
+                const B = marketWeightSum ? parseFloat((marketMaturitySum / marketWeightSum).toFixed(3)) : 0;
+                const C = consumerWeightSum ? parseFloat((consumerMaturitySum / consumerWeightSum).toFixed(3)) : 0;
+
+                const contributionFactor = 0.052791818; // Contribution factor for RE-RMI calculation
+                const RE_RMI = parseFloat((governanceMaturitySum + marketMaturitySum + consumerMaturitySum) + ((percentageContribution / 100) * contributionFactor)).toFixed(3);
+
+                console.log({ governanceMaturitySum, governanceWeightSum, marketMaturitySum, marketWeightSum, consumerMaturitySum, consumerWeightSum, A, B, C, RE_RMI });
+
+                document.getElementById('re-rmi-summary').textContent = RE_RMI;
+
+                createCircularProgress('#circleA', A);
+                createCircularProgress('#circleB', B);
+                createCircularProgress('#circleC', C);
+                createCircularProgress('#circleRE', RE_RMI, 1, '#FF0000'); // Main chart with red color
+
+                document.getElementById('summary-results').style.display = 'block';
+                // document.getElementById('download-summary').disabled = false;
+            } catch (error) {
+                console.error('Error generating RE-RMI summary:', error);
+                alert('Failed to generate RE-RMI summary. Please try again later.');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        });
+
+        // document.getElementById('download-summary').addEventListener('click', () => {
+        //     const re_rmi_summary = document.getElementById('re-rmi-summary').textContent;
+        //     const governance_maturity_index = document.getElementById('labelA').textContent;
+        //     const market_maturity_index = document.getElementById('labelB').textContent;
+        //     const consumer_maturity_index = document.getElementById('labelC').textContent;
+
+        //     const url = new URL('/generate-pdf/', window.location.origin);
+        //     url.searchParams.append('re_rmi_summary', re_rmi_summary);
+        //     url.searchParams.append('governance_maturity_index', governance_maturity_index);
+        //     url.searchParams.append('market_maturity_index', market_maturity_index);
+        //     url.searchParams.append('consumer_maturity_index', consumer_maturity_index);
+
+        //     window.location.href = url;
+        // });
+    </script>
+</body>
+</html>

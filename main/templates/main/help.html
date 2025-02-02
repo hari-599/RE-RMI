@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .header a:hover {
+            background-color: #0056b3;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .content h2 {
+            margin-top: 0;
+        }
+        .content p {
+            line-height: 1.6;
+        }
+        .content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'logout' %}" class="logout-button">Sign Out</a>
+    </div>
+    <div class="content">
+        <h2>Help Page</h2>
+        {% load static %}
+
+        <p>Welcome to the help page! Here are some instructions to help you use this website:</p>
+        <ul>
+            <li><strong>Home Page:</strong> Navigate to the home page to see an overview of the available features.</li>
+            <li><strong>Upload Excel File:</strong> Use the upload section on the home page to upload your Excel file. Make sure the file is in .xls or .xlsx format. Need a template? <a href="{% static 'RE-RMI Survey Excel Sheet.xlsx' %}" download>Download Excel Template</a></li>
+            <li><strong>View Data:</strong> After uploading the file, you can view the processed data by navigating to the respective sections such as Regional Governance, Market Conditions, and Consumer Perception.</li>
+            <li><strong>Calculate Contribution:</strong> Go to the Regional Overview page to calculate your contribution. This will unlock the RE-RMI Summary feature.</li>
+            <li><strong>Logout:</strong> Click the Sign Out button in the header to log out of your account.</li>
+            <li><strong>Help:</strong> If you need assistance, you can always come back to this help page.</li>
+        </ul>
+        <p>If you encounter any issues or have any questions, please contact support at <a href="mailto:ar.arathysdarsan@gmail.com">ar.arathysdarsan@gmail.com</a>.</p>
+    </div>
+</body>
+</html>

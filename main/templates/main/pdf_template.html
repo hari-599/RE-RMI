@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RE-RMI Summary PDF</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+        }
+        .summary-section {
+            margin-bottom: 20px;
+        }
+        .summary-section h3 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="summary-section">
+        <h3>RE-RMI Summary</h3>
+        <p><strong>RE-RMI Summary:</strong> {{ re_rmi_summary }}</p>
+    </div>
+    <div class="summary-section">
+        <h3>Indexes</h3>
+        <p><strong>Governance Maturity Index:</strong> {{ governance_maturity_index }}</p>
+        <p><strong>Market Maturity Index:</strong> {{ market_maturity_index }}</p>
+        <p><strong>Consumer Maturity Index:</strong> {{ consumer_maturity_index }}</p>
+    </div>
+</body>
+</html>

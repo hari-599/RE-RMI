@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        img { 
+            max-width: 150px;  /* Set max width of the logo */
+            height: auto;     /* Maintain aspect ratio */
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .tabs button {
+            width: 50%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .tabs button.active {
+            background-color: #0056b3;
+        }
+        form {
+            display: none;
+            margin-top: 20px;
+        }
+        form.active {
+            display: block;
+        }
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background: #0056b3;
+        }
+        .forgot-password {
+            text-align: right;
+            font-size: 0.9em;
+        }
+        .forgot-password a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- Logo -->
+        <img src="../../static/logo.png" alt="Logo">
+        <!-- Heading -->
+        <h1>Renewable Energy - Regional Maturity Index (RE-RMI)<br> A Tool for Household Energy Transition Assessment</h1>
+        <!-- Small Description -->
+        <p class="description">Experience the best services by signing up or logging into your account.</p>
+    </div>
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button id="login-tab" class="active">Login</button>
+            <button id="signup-tab">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="active" method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <div class="forgot-password">
+                <a href="{% url 'password_reset' %}">Forgot Password?</a>
+            </div>
+            <button type="submit" name="login">Login</button>
+        </form>
+        
+        <!-- Signup Form -->
+        <form id="signup-form" method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password1" placeholder="Password" required>
+            <input type="password" name="password2" placeholder="Confirm Password" required>
+            <button type="submit" name="signup">Sign Up</button>
+        </form>
+        
+    </div>
+
+    <script>
+        // JavaScript to toggle between login and signup forms
+        const loginTab = document.getElementById('login-tab');
+        const signupTab = document.getElementById('signup-tab');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.classList.add('active');
+            signupForm.classList.remove('active');
+        });
+
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('active');
+            loginTab.classList.remove('active');
+            signupForm.classList.add('active');
+            loginForm.classList.remove('active');
+        });
+    </script>
+    <script src="bundle.js"></script>
+</body>
+</html>

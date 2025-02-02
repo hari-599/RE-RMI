@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regional Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group input[type="number"] {
+            width: calc(100% - 10px);
+        }
+        .mandatory {
+            color: red;
+        }
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .form-actions button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-actions button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}">Home</a>
+    </div>
+    <div class="form-container">
+        <h1>Regional Overview</h1>
+        <form id="overview-form">
+            <div class="form-group">
+                <label for="state">State</label>
+                <select id="state" name="state" required>
+                    <option value="">Select State</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="district">District</label>
+                <select id="district" name="district" required>
+                    <option value="">Select District</option>
+                </select>
+            </div>
+            <!-- Rest of the form remains the same -->
+            <div class="form-group">
+                <label for="circle">State Electricity Board Circle <span class="mandatory">*</span></label>
+                <input type="text" id="circle" name="circle" required>
+            </div>
+            <div class="form-group">
+                <label for="division">State Electricity Division</label>
+                <input type="text" id="division" name="division" required>
+            </div>
+            <div class="form-group">
+                <label for="section">State Electricity Section Office</label>
+                <input type="text" id="section" name="section" required>
+            </div>
+            <div class="form-group">
+                <label for="domestic_consumers">Number of Domestic Consumers<span class="mandatory">*</span></label>
+                <input type="number" id="domestic_consumers" name="domestic_consumers" required>
+            </div>
+            <div class="form-group">
+                <label for="renewable_prosumers">Number of Live Renewable Energy Prosumers<span class="mandatory">*</span></label>
+                <input type="number" id="renewable_prosumers" name="renewable_prosumers" required>
+            </div>
+            <div class="form-group">
+                <label for="annual_generation">Annual Electricity Generation from Renewable Sources<span class="mandatory">*</span></label>
+                <input type="number" id="annual_generation" name="annual_generation" required>
+            </div>
+            <div class="form-group">
+                <label for="annual_consumption">Annual Electricity Consumption<span class="mandatory">*</span></label>
+                <input type="number" id="annual_consumption" name="annual_consumption" required>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="calculate-button">Calculate Contribution</button>
+            </div>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // State and district data
+        const stateDistricts = {
+            "Andhra Pradesh": ["Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"],
+            "Tamil Nadu": ["Ariyalur", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul", "Erode", "Kanchipuram", "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram", "Salem", "Sivaganga", "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"],
+            "Kerala": ["Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode", "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Thrissur", "Wayanad"],
+            "Karnataka": ["Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban", "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada", "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar", "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru", "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"]
+            // Add more states and their districts as needed
+        };
+
+        // Populate state dropdown
+        const stateSelect = document.getElementById('state');
+        Object.keys(stateDistricts).forEach(state => {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            stateSelect.appendChild(option);
+        });
+
+        // Handle state selection change
+        stateSelect.addEventListener('change', function() {
+            const districtSelect = document.getElementById('district');
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            
+            if (this.value) {
+                const districts = stateDistricts[this.value];
+                districts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        });
+
+        document.getElementById('calculate-button').addEventListener('click', function () {
+            const form = document.getElementById('overview-form');
+            const formData = new FormData(form);
+
+            fetch("{% url 'regional_overview' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                const contribution = data.contribution.toFixed(2);
+
+                // Display the calculated contribution
+                resultDiv.textContent = `Percentage Contribution from RETs: ${contribution}%`;
+
+                // Store in localStorage
+                window.localStorage.setItem('isContributionCalculated', 'true');
+                window.localStorage.setItem('retContribution', contribution);
+
+                // Notify user that the RE-RMI Summary is now unlocked
+                alert('Calculation completed! You can now access the RE-RMI Summary.');
+            });
+        });
+    </script>
+</body>
+</html>
