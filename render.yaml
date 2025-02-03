@@ -1,11 +1,17 @@
-# filepath: /c:/Users/Hari/Desktop/web_ar/render.yaml
 services:
   - type: web
     name: web_ar
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn renewable_energy.wsgi
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput  # Collect static files
+      python manage.py migrate  # Run migrations
+    startCommand: gunicorn renewable_energy.wsgi:application --bind 0.0.0.0:8000
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: renewable_energy.settings
+      - key: SECRET_KEY
+        sync: false  # Keeps your secret key safe
+      - key: DEBUG
+        value: "False"
